@@ -14,6 +14,11 @@ defmodule Isupayx.Application do
        repos: Application.fetch_env!(:isupayx, :ecto_repos), skip: skip_migrations?()},
       {DNSCluster, query: Application.get_env(:isupayx, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Isupayx.PubSub},
+      # Event system: Notification handler and Dead Letter Queue
+      Isupayx.Events.NotificationHandler,
+      Isupayx.Events.DeadLetterQueue,
+      # Concurrency: Distributed Mutex for preventing race conditions
+      Isupayx.Concurrency.DistributedMutex,
       # Start a worker by calling: Isupayx.Worker.start_link(arg)
       # {Isupayx.Worker, arg},
       # Start to serve requests, typically the last entry

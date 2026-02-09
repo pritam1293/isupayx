@@ -5,6 +5,7 @@ defmodule IsupayxWeb.TransactionController do
   alias Isupayx.Transactions.Transaction
   alias Isupayx.Validation.{SchemaValidator, BusinessRuleValidator, ComplianceValidator, RiskValidator}
   alias IsupayxWeb.{ErrorResponse, Plugs.IdempotencyCheck}
+  alias Isupayx.Events.Publisher
 
   @doc """
   POST /api/v1/transactions
@@ -54,6 +55,12 @@ defmodule IsupayxWeb.TransactionController do
       
       # Success response
       response = build_success_response(transaction, compliance_flags)
+      
+      # Publish transaction.created event (async)
+      Publisher.publish(:created, transaction, %{
+        compliance_flags: compliance_flags,
+        idempotency_key: idempotency_key
+      })
       
       # Cache response for idempotency
       if idempotency_key do
