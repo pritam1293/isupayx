@@ -5,8 +5,17 @@ defmodule IsupayxWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/api", IsupayxWeb do
-    pipe_through :api
+  # Pipeline for authenticated transactions API
+  pipeline :authenticated_api do
+    plug :accepts, ["json"]
+    plug IsupayxWeb.Plugs.AuthenticateMerchant
+    plug IsupayxWeb.Plugs.IdempotencyCheck
+  end
+
+  scope "/api/v1", IsupayxWeb do
+    pipe_through :authenticated_api
+
+    post "/transactions", TransactionController, :create
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
